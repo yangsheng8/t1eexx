@@ -13,6 +13,8 @@ html
 						span 昨日头条
 						if from
 							span - 欢迎来自!{from}的朋友
+						if avatarId
+							<img src="#{avatarId}" />
 			.container
 				.row.section.indexBody
 					.col.s8
@@ -45,5 +47,6 @@ html
 		script(src="/jspm_packages/system.js")
 		script(src="/config.js")
 		script.
-			var from = "!{from}";
+			var from = !{fromForJs};
+			console.log(from);
 			//- System.import('scripts/login');

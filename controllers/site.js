@@ -1,6 +1,24 @@
 const bluebird = require('bluebird');
 const connectionModel = require('../models/connection');
 
+//进行转义
+var escapeHtml = function(str){
+	if(!str) return '';
+	str = str.replace(/&/g,'&amp;');
+	str = str.replace(/</g,'&lt;');
+	str = str.replace(/>/g,'&gt;');
+	str = str.replace(/"/g,'&quto;');
+	str = str.replace(/'/g,'&#39;');
+	// str = str.replace(/ /g,'&#32;'); 空格不需要转义
+	return str;
+}
+
+// var escaperForJs = function (str){
+// 	if(!str) return '';
+// 	str = str.replace(/\\/g,'\\\\');
+// 	str = str.replace(/"/g,'\\"');
+// 	return str;
+// }
 
 //获取文章评论数量
 exports.index = async function(ctx, next){
@@ -12,10 +30,22 @@ exports.index = async function(ctx, next){
 	const comments = await query(
 			'select comment.*,post.id as postId,post.title as postTitle,user.username as username from comment left join post on comment.postId = post.id left join user on comment.userId = user.id order by comment.id desc limit 10'
 		);
-	ctx.render('index', {posts, comments, from:ctx.query.from || ''});
+	ctx.render('index', {
+		posts,
+		comments,
+		from: escapeHtml(ctx.query.from) || '',
+		fromForJs:JSON.stringify(ctx.query.from) || '',
+		avatarId:escapeHtml(ctx.query.avatarId) || ''
+	});
 	connection.end();
 };
 
+//替换富文本scripting 标签
+var xssFilter = function(html){
+	if(!html) return '';
+		html = html.replace(/<\s*\/?script\s*>/g,'');
+	return html;
+}
 exports.post = async function(ctx, next){
 	try{
 		console.log('enter post');
@@ -31,6 +61,9 @@ exports.post = async function(ctx, next){
 		const comments = await query(
 			`select comment.*,user.username from comment left join user on comment.userId = user.id where postId = "${post.id}" order by comment.createdAt desc`
 		);
+		comments.forEach(function(comment){
+			comment.content = xssFilter(comment.content);
+		})
 		if(post){
 			ctx.render('post', {post, comments});
 		}else{
