@@ -63,6 +63,8 @@ var xssFilter = function (html) {
 exports.post = async function (ctx, next) {
 	try {
 		console.log('enter post');
+		var csrfToken = parseInt(Math.random() * 9999999,10);
+		ctx.cookies.set('csrfToken',csrfToken);
 
 		const id = ctx.params.id;
 		const connection = connectionModel.getConnection();
@@ -81,7 +83,8 @@ exports.post = async function (ctx, next) {
 		if (post) {
 			ctx.render('post', {
 				post,
-				comments
+				comments,
+				csrfToken
 			});
 		} else {
 			ctx.status = 404;
