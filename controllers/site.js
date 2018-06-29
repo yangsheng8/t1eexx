@@ -3,12 +3,13 @@ const connectionModel = require('../models/connection');
 
 //进行转义
 var escapeHtml = function (str) {
-	if (!str) return '';
-	str = str.replace(/&/g, '&amp;');
-	str = str.replace(/</g, '&lt;');
-	str = str.replace(/>/g, '&gt;');
-	str = str.replace(/"/g, '&quto;');
-	str = str.replace(/'/g, '&#39;');
+	console.log(str);
+	// if (!str) return '';
+	// str = str.replace(/&/g, '&amp;');
+	// str = str.replace(/</g, '&lt;');
+	// str = str.replace(/>/g, '&gt;');
+	// str = str.replace(/"/g, '&quto;');
+	// str = str.replace(/'/g, '&#39;');
 	// str = str.replace(/ /g,'&#32;'); 空格不需要转义
 	return str;
 }
@@ -42,6 +43,7 @@ exports.index = async function (ctx, next) {
 
 //替换富文本scripting 标签
 var xssFilter = function (html) {
+	return html
 	if (!html) return '';
 	var xss = require('xss');
 	var ret = xss(html,{
@@ -96,7 +98,12 @@ exports.post = async function (ctx, next) {
 
 exports.addComment = async function (ctx, next) {
 	try {
-		const data = ctx.request.body;
+		var data;
+		if(ctx.request.method.toLowerCase() ==='post'){
+			data = ctx.request.body;
+		}else{
+			data = ctx.request.query;
+		}
 		const connection = connectionModel.getConnection();
 		const query = bluebird.promisify(connection.query.bind(connection));
 		const result = await query(

@@ -12,7 +12,7 @@ $form.addEventListener('submit', (e) => {
 
 	axios.post('/user/login', data).then((data) => {
 		if(data.status === 200 && data.data.status === 0){
-			location.href = '/';
+			// location.href = '/';
 			console.log('登录成功');
 		}else{
 			modal.show({
