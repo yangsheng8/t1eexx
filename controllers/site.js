@@ -107,6 +107,17 @@ exports.addComment = async function (ctx, next) {
 		}else{
 			data = ctx.request.query;
 		}
+
+		//判断传递过来的数据是否含有token
+		if(!data.csrfToken){
+			throw new  Error('CSRF Token为空');
+		}
+
+		//判断传递的token 是否和cookies里面的token一致
+		if(data.csrfToken !== ctx.cookies.get('csrfToken')){
+			 throw new Error('CSRF Token错误');
+		}
+
 		const connection = connectionModel.getConnection();
 		const query = bluebird.promisify(connection.query.bind(connection));
 		const result = await query(
